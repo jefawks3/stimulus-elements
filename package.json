@@ -1,0 +1,73 @@
+{
+  "name": "stimulus-elements",
+  "version": "0.1.0",
+  "description": "Stimulus elements designed to be agnostic of which UI Framework (if any).",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jefawks3/stimulus-elements.git"
+  },
+  "homepage": "https://github.com/jefawks3/stimulus-elements#readme",
+  "author": "James Fawks",
+  "bugs": {
+    "url": "https://github.com/jefawks3/stimulus-elements/issues"
+  },
+  "license": "MIT",
+  "type": "module",
+  "module": "dist/stimulus-elements.js",
+  "main": "dist/stimulus-elements.umd.js",
+  "types": "dist/types/index.d.ts",
+  "files": [
+    "dist/stimulus-elements.js",
+    "dist/stimulus-elements.umd.js",
+    "dist/types/**/*"
+  ],
+  "scripts": {
+    "clean": "rm -fr dist",
+    "types": "tsc --noEmit false --declaration true --emitDeclarationOnly true --outDir dist/types",
+    "build": "yarn types && rollup --bundleConfigAsCjs -c",
+    "build:test": "tsc -b tsconfig.test.json",
+    "watch": "rollup  -bundleConfigAsCjs -wc",
+    "prerelease": "yarn build && git --no-pager diff && echo && npm pack --dry-run",
+    "release": "npm publish",
+    "test": "yarn build:test && karma start karma.conf.cjs",
+    "test:watch": "yarn test --auto-watch --no-single-run",
+    "lint": "eslint . --ext .ts",
+    "format": "yarn lint --fix"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-terser": "^0.2.0",
+    "@rollup/plugin-typescript": "^10.0.1",
+    "@types/qunit": "^2.9.0",
+    "@types/webpack-env": "^1.14.0",
+    "@typescript-eslint/eslint-plugin": "^5.36.2",
+    "@typescript-eslint/parser": "^5.36.2",
+    "concurrently": "^7.6.0",
+    "eslint": "^8.23.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "karma": "^6.4.1",
+    "karma-chrome-launcher": "^3.1.1",
+    "karma-qunit": "^4.1.2",
+    "karma-sauce-launcher": "^4.3.6",
+    "karma-webpack": "^5.0.0",
+    "prettier": "^2.7.1",
+    "qunit": "^2.9.2",
+    "rimraf": "^3.0.2",
+    "rollup": "^3.7.0",
+    "ts-loader": "^9.4.2",
+    "tslib": "^2.4.0",
+    "typescript": "^4.8.2",
+    "webpack": "^5.75.0"
+  },
+  "resolutions": {
+    "webdriverio": "^7.19.5"
+  },
+  "dependencies": {
+    "@floating-ui/dom": "^1.0.9",
+    "@hotwired/stimulus": ">=3.0.0"
+  },
+  "peerDependencies": {
+    "@hotwired/stimulus": ">=3.0.0"
+  }
+}
