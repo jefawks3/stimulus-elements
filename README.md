@@ -14,5 +14,5 @@ of the component.
 
 ## TODO
 
-[] Add Tests
-[] Add Documentation
+- [ ] Add Tests
+- [ ] Add Documentation
