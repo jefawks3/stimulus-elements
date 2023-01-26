@@ -1,4 +1,8 @@
+/.idea
+/.git
 src/tests/
 dist/tests/
 tsconfig*
+/docs
+/playground
 *.log

@@ -1,10 +1,11 @@
-import { Application } from "@hotwired/stimulus"
+import {Application, ControllerConstructor} from "@hotwired/stimulus"
 import * as Elements from "../elements"
 
-export default (application: Application, prefix = "se--") => {
+export default (application: Application) => {
     Object.entries(Elements).forEach((element) => {
         const [name, constructor] = element
-        const identifier = `${prefix}${name.replace(/(\w)([A-Z])/g, "$1-$2").toLowerCase()}`
-        application.register(identifier, constructor)
+        const identifier = name.replace(/(\w)([A-Z])/g, "$1-$2").toLowerCase()
+        application.logDebugActivity('stimulus-elements', 'registerElement', { name, constructor, identifier })
+        application.register(identifier, constructor as ControllerConstructor)
     })
 }

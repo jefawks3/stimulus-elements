@@ -3,11 +3,12 @@ import { Controller } from "@hotwired/stimulus"
 import Stack from "../util/stack"
 import { toggleClassActiveState } from "../util/classlist_helpers"
 
-const openModals: Stack<Modal> = new Stack()
+export class Modal extends Controller {
+    private static readonly openModals: Stack<Modal> = new Stack()
 
-export const closeAll = () => openModals.forEach((m) => m.hide())
+    static closeAllModals = () => this.openModals.forEach((m) => m.hide())
 
-class Modal extends Controller {
+
     static classes = ["backdrop", "body", "active", "inactive"]
     static values = {
         backdrop: {
@@ -46,17 +47,15 @@ class Modal extends Controller {
     private declare backdropElement: HTMLElement | null
 
     connect() {
-        this.isOpen = !this.showValue
+        this.element.classList.add(...this.inactiveClasses)
 
         if (this.showValue) {
             this.show()
-        } else {
-            this.hide()
         }
     }
 
     disconnect() {
-        openModals.remove(this)
+        Modal.openModals.remove(this)
         document.body.classList.remove(...this.bodyClasses)
         this.removeBackdrop()
         this.removeOutsideHandler()
@@ -76,8 +75,8 @@ class Modal extends Controller {
             return
         }
 
-        closeAll()
-        openModals.push(this)
+        Modal.closeAllModals()
+        Modal.openModals.push(this)
         document.body.classList.add(...this.bodyClasses)
         this.showBackdrop()
         toggleClassActiveState(this.element, true, this.activeClasses, this.inactiveClasses)
@@ -92,7 +91,7 @@ class Modal extends Controller {
             return
         }
 
-        openModals.remove(this)
+        Modal.openModals.remove(this)
         this.removeOutsideHandler()
         this.removeKeyboardHandler()
         this.removeBackdrop()
@@ -100,7 +99,7 @@ class Modal extends Controller {
         document.body.classList.remove(...this.bodyClasses)
         this.isOpen = false
         this.onHidden()
-        openModals.peak() && openModals.peak().show()
+        Modal.openModals.peak() && Modal.openModals.peak().show()
     }
 
     protected onShow(): Event {
@@ -159,7 +158,6 @@ class Modal extends Controller {
 
     private createBackdropElement(): HTMLElement {
         const backdropElement = document.createElement("div")
-        backdropElement.setAttribute("data-modal-backdrop", "true")
         backdropElement.classList.add(...this.backdropClasses)
         return backdropElement
     }
@@ -176,5 +174,3 @@ class Modal extends Controller {
         }
     }
 }
-
-export default Modal

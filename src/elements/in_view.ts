@@ -1,19 +1,15 @@
 import { Controller } from "@hotwired/stimulus"
 
-export default class extends Controller {
-    static targets = ["observer", "root"]
+export class InView extends Controller {
+    static outlets = ["root"]
     static values = {
-        observeSelf: {
-            type: Boolean,
-            default: false,
-        },
         margin: {
             type: String,
             default: "0px",
         },
         threshold: {
-            type: Number,
-            default: 0.25,
+            type: Array,
+            default: [0.25],
         },
         triggerOnce: {
             type: Boolean,
@@ -43,10 +39,12 @@ export default class extends Controller {
     }
 
     observerTargetConnected(target: HTMLElement): void {
+        this.application.logDebugActivity(this.identifier, 'observerTargetConnected', { target })
         this.observer.observe(target)
     }
 
     observerTargetDisconnected(target: HTMLElement): void {
+        this.application.logDebugActivity(this.identifier, 'observerTargetDisconnected', { target })
         this.observer.unobserve(target)
     }
 

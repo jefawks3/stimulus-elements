@@ -1,14 +1,12 @@
-import { ActionEvent, Controller } from "@hotwired/stimulus"
+import {Controller} from "@hotwired/stimulus"
 
-interface SetThemeEvent extends ActionEvent {
+interface SetThemeAction {
     params: {
-        theme?: string | null
+        theme: string
     }
 }
 
-export default class extends Controller {
-    static targets = ["setter"]
-    static classes = ["selected"]
+export class ColorTheme extends Controller {
     static values = {
         themes: {
             type: Array,
@@ -42,18 +40,20 @@ export default class extends Controller {
             type: String,
             default: "data-theme",
         },
+        clearCachedClasses: {
+            type: Boolean,
+            default: true
+        }
     }
 
-    declare readonly setterTargets: Element[]
     declare readonly themesValue: string[]
     declare readonly defaultThemeValue: string
     declare readonly darkThemeValue: string
     declare readonly systemThemeNameValue: string
     declare readonly storageMethodValue: string
     declare readonly storageKeyValue: string
-    declare readonly setterValueAttrValue: string
     declare readonly modeValue: string
-    declare readonly selectedClasses: string[]
+    declare readonly clearCachedClassesValue: boolean
 
     get currentTheme(): string {
         const theme = this.currentThemeKey
@@ -84,25 +84,20 @@ export default class extends Controller {
             : null
     }
 
-    setterTargetConnected(target: HTMLElement) {
-        const theme = target.getAttribute(this.setterValueAttrValue) as string
-
-        if (theme === this.systemThemeNameValue || this.themesValue.includes(theme)) {
-            target.addEventListener("click", this.setColorTheme.bind(this, theme))
-        }
-    }
-
     connect(): void {
-        if (this.hasStoredTheme) {
-            this.setColorTheme(this.storedTheme as string)
-        } else {
-            this.setColorTheme(this.systemThemeNameValue)
-        }
+        const theme = this.hasStoredTheme ? this.storedTheme as string : this.systemThemeNameValue
+        this.setColorTheme(theme)
+        this.clearCachedClasses()
     }
 
-    setTheme({ params: { theme }, preventDefault }: SetThemeEvent): void {
-        preventDefault()
-        this.setColorTheme(theme || this.systemTheme)
+    toggle() {
+        const index = (this.themesValue.indexOf(this.currentTheme) + 1) % this.themesValue.length
+        const theme = this.themesValue[index]
+        this.setColorTheme(theme)
+    }
+
+    setTheme({ params: { theme } }: SetThemeAction): void {
+        this.setColorTheme(theme)
     }
 
     setSystem(): void {
@@ -112,9 +107,7 @@ export default class extends Controller {
     protected onUpdateTheme(previous: string, next: string): Event {
         return this.dispatch("update", {
             detail: { previous, next },
-            prefix: "color_theme",
-            cancelable: true,
-            bubbles: true,
+            cancelable: true
         })
     }
 
@@ -122,14 +115,26 @@ export default class extends Controller {
         this.dispatch("updated", { detail: { theme } })
     }
 
+    protected getThemeClassName(theme: string): string {
+        return `${theme.replace(/(\w)([A-Z])/g, "$1-$2").toLowerCase()}Theme`
+    }
+
+    protected getThemeClasses(theme: string): string[] {
+        const className = this.getThemeClassName(theme)
+        return this.classes.has(className) ? this.classes.getAll(className) : [theme]
+    }
+
     private setColorTheme(theme: string): void {
+        this.application.logDebugActivity(this.identifier, 'setColorTheme', { theme })
+
         if (theme != this.systemThemeNameValue && !this.themesValue.includes(theme)) {
             theme = this.systemThemeNameValue
         }
 
+        const previousTheme = this.currentThemeKey
         const value = theme === this.systemThemeNameValue ? this.systemTheme : theme
 
-        if (this.onUpdateTheme(this.currentThemeKey, theme).defaultPrevented) {
+        if (this.onUpdateTheme(previousTheme, theme).defaultPrevented) {
             return
         }
 
@@ -138,27 +143,23 @@ export default class extends Controller {
         this.modeValue.split(",").forEach((mode) => {
             mode = mode.trim()
 
-            if (this.modeValue.startsWith("data-")) {
-                this.element.setAttribute(this.modeValue, value)
+            if (mode.startsWith("data-")) {
+                this.element.setAttribute(mode, value)
             } else if (mode === "class") {
-                this.element.classList.remove(...this.themesValue.filter((t) => t != value))
-                this.element.classList.add(value)
+                this.themesValue.forEach((t) => t != value && this.element.classList.remove(...this.getThemeClasses(t)))
+                this.element.classList.add(...this.getThemeClasses(value))
             }
         })
 
-        this.setterTargets.forEach((target) => {
-            let classes = this.selectedClasses
+        this.onUpdatedTheme(theme)
+    }
 
-            if (target.hasAttribute("data-color-theme-selected-class")) {
-                const targetClasses = (target.getAttribute("data-color-theme-selected-class") as string).split(" ")
-                classes = classes.concat(...targetClasses)
-            }
-
-            if (target.getAttribute(this.setterValueAttrValue) === theme) {
-                target.classList.add(...classes)
-            } else {
-                target.classList.remove(...classes)
-            }
-        })
+    private clearCachedClasses(): void {
+        if (this.clearCachedClassesValue && this.element != document.documentElement) {
+            this.themesValue.forEach((theme) => {
+                const classes = this.getThemeClasses(theme)
+                document.documentElement.classList.remove(...classes)
+            })
+        }
     }
 }

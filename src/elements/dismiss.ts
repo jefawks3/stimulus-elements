@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 
-export default class extends Controller {
+export class Dismiss extends Controller {
     static classes = ["dismissed"]
 
     declare readonly hasDismissedClass: boolean

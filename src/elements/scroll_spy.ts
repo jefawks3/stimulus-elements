@@ -3,7 +3,7 @@ import { Controller } from "@hotwired/stimulus"
 import range from "../util/range"
 import { toggleClassActiveState } from "../util/classlist_helpers"
 
-export default class extends Controller {
+export class ScrollSpy extends Controller {
     static targets = ["root", "section", "menu"]
     static classes = ["active", "inactive"]
     static values = {
@@ -38,12 +38,14 @@ export default class extends Controller {
     }
 
     sectionTargetConnected(target: Element): void {
+        this.application.logDebugActivity(this.identifier, 'sectionTargetConnected', { target })
         if (target.id) {
             this.observer.observe(target)
         }
     }
 
     sectionTargetDisconnected(target: Element): void {
+        this.application.logDebugActivity(this.identifier, 'sectionTargetDisconnected', { target })
         this.observer.unobserve(target)
 
         if (this.currentEntry && this.currentEntry.target.id == target.id) {
@@ -52,6 +54,7 @@ export default class extends Controller {
     }
 
     menuTargetConnected(target: HTMLElement): void {
+        this.application.logDebugActivity(this.identifier, 'menuTargetConnected', { target })
         const url = new URL(target.getAttribute("href") as string, window.location.href)
 
         target.dataset.scrollSpyMenuState = "inactive"
