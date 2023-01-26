@@ -6,4 +6,4 @@ node_modules/
 docs/api/
 *.log
 *.tsbuildinfo
-
+stimulus-elements-*.tgz

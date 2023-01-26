@@ -1,8 +1,10 @@
 /.idea
 /.git
-src/tests/
-dist/tests/
-tsconfig*
+/src
 /docs
-/playground
+/node_modules
 *.log
+.DS_Store
+.keep
+.yarn.lock
+yarn-error.log
