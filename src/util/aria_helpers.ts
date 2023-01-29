@@ -2,7 +2,8 @@
 import {addToAttributeList} from "./element_helpers";
 
 export type AriaParentReferenceType = "described-by" | "labeled-by" | "details" | "owns" | "controls"
-export type AriaTypes = AriaParentReferenceType
+export type AriaStateType = "expanded" | "hidden"
+export type AriaTypes = AriaParentReferenceType | AriaStateType
 
 export const ariaAttribute = (type: AriaTypes): string => `aria-${type.replace("-", "")}`
 
@@ -19,4 +20,8 @@ export const findParent = (type: AriaParentReferenceType, id: string): Element |
 export const findParents = (type: AriaParentReferenceType, id: string): Element[] => {
     const selector = ariaSelector(type, id)
     return Array.from(document.querySelectorAll(selector))
+}
+
+export const setAriaState = (element: Element, type: AriaStateType, value: string | boolean): void => {
+    element.setAttribute(ariaAttribute(type), JSON.stringify(value))
 }
