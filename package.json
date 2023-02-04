@@ -1,6 +1,6 @@
 {
   "name": "stimulus-elements",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Stimulus elements designed to be agnostic of which UI Framework (if any).",
   "repository": {
     "type": "git",
