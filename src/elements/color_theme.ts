@@ -40,10 +40,7 @@ export class ColorTheme extends Controller {
             type: String,
             default: "data-theme",
         },
-        clearCachedClasses: {
-            type: Boolean,
-            default: true
-        }
+        element: String
     }
 
     declare readonly themesValue: string[]
@@ -53,7 +50,13 @@ export class ColorTheme extends Controller {
     declare readonly storageMethodValue: string
     declare readonly storageKeyValue: string
     declare readonly modeValue: string
-    declare readonly clearCachedClassesValue: boolean
+
+    declare readonly hasElementValue: boolean
+    declare readonly elementValue: string
+
+    get rootElement(): Element {
+        return (this.hasElementValue && document.querySelector(this.elementValue)) || this.element
+    }
 
     get currentTheme(): string {
         const theme = this.currentThemeKey
@@ -87,7 +90,6 @@ export class ColorTheme extends Controller {
     connect(): void {
         const theme = this.hasStoredTheme ? this.storedTheme as string : this.systemThemeNameValue
         this.setColorTheme(theme)
-        this.clearCachedClasses()
     }
 
     toggle() {
@@ -144,22 +146,13 @@ export class ColorTheme extends Controller {
             mode = mode.trim()
 
             if (mode.startsWith("data-")) {
-                this.element.setAttribute(mode, value)
+                this.rootElement.setAttribute(mode, value)
             } else if (mode === "class") {
-                this.themesValue.forEach((t) => t != value && this.element.classList.remove(...this.getThemeClasses(t)))
-                this.element.classList.add(...this.getThemeClasses(value))
+                this.themesValue.forEach((t) => t != value && this.rootElement.classList.remove(...this.getThemeClasses(t)))
+                this.rootElement.classList.add(...this.getThemeClasses(value))
             }
         })
 
         this.onUpdatedTheme(theme)
-    }
-
-    private clearCachedClasses(): void {
-        if (this.clearCachedClassesValue && this.element != document.documentElement) {
-            this.themesValue.forEach((theme) => {
-                const classes = this.getThemeClasses(theme)
-                document.documentElement.classList.remove(...classes)
-            })
-        }
     }
 }
