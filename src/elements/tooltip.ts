@@ -12,7 +12,6 @@ export class Tooltip extends PopoverBase {
     }
 
     protected getReferenceElement(): Element {
-        console.log('test', Object.getOwnPropertyNames(this))
         return this.ariaDescribedByParent
     }
 }
