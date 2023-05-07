@@ -7,9 +7,7 @@ export class Dismiss extends Controller {
     declare readonly dismissedClasses: string[]
 
     dismiss(): void {
-        const dismissEvent = this.onDismiss()
-
-        if (dismissEvent.defaultPrevented) {
+        if (!this.onDismiss()) {
             return
         }
 
@@ -22,8 +20,9 @@ export class Dismiss extends Controller {
         this.onDismissed()
     }
 
-    protected onDismiss(): Event {
-        return this.dispatch("dismiss", { cancelable: true })
+    protected onDismiss(): boolean {
+        const event = this.dispatch("dismiss", { cancelable: true })
+        return event.defaultPrevented
     }
 
     protected onDismissed(): void {

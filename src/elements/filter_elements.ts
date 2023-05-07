@@ -71,7 +71,7 @@ export class FilterElements extends Controller {
     }
 
     showAll() {
-        if (this.onFilter().defaultPrevented) {
+        if (!this.onFilter()) {
             return
         }
 
@@ -80,8 +80,9 @@ export class FilterElements extends Controller {
         this.onFiltered()
     }
 
-    protected onFilter(): Event {
-        return this.dispatch('filter', { detail: { tags: this.selectedTags }, cancelable: true })
+    protected onFilter(): boolean {
+        const event = this.dispatch('filter', { detail: { tags: this.selectedTags }, cancelable: true })
+        return !event.defaultPrevented
     }
 
     protected onFiltered(): void {
@@ -89,7 +90,7 @@ export class FilterElements extends Controller {
     }
 
     private filterElementsBy(tags: string[]) {
-        if (this.onFilter().defaultPrevented) {
+        if (!this.onFilter()) {
             return
         }
 

@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 import Stack from "../util/stack"
-import { toggleClassActiveState } from "../util/classlist_helpers"
+import {ToggleStateFunction, useToggleState} from "../mixins";
 
 export class Modal extends Controller {
     private static readonly openModals: Stack<Modal> = new Stack()
@@ -9,12 +9,8 @@ export class Modal extends Controller {
     static closeAllModals = () => this.openModals.forEach((m) => m.hide())
 
 
-    static classes = ["backdrop", "body", "active", "inactive"]
+    static classes = ["backdrop", "body"]
     static values = {
-        backdrop: {
-            type: Boolean,
-            default: true,
-        },
         keyboard: {
             type: Boolean,
             default: true,
@@ -34,10 +30,8 @@ export class Modal extends Controller {
     }
 
     declare readonly backdropClasses: string[]
+    declare readonly hasBackdropClass: boolean
     declare readonly bodyClasses: string[]
-    declare readonly activeClasses: string[]
-    declare readonly inactiveClasses: string[]
-    declare readonly backdropValue: boolean
     declare readonly keyboardValue: boolean
     declare readonly keyboardKeyValue: string
     declare readonly preventCloseValue: boolean
@@ -45,9 +39,19 @@ export class Modal extends Controller {
 
     private declare isOpen: boolean
     private declare backdropElement: HTMLElement | null
+    declare private toggleState: ToggleStateFunction
+
+    get opened(): boolean {
+        return this.isOpen
+    }
+
+    initialize() {
+        super.initialize();
+        this.toggleState = useToggleState(this, this.element, ['visible', 'hidden'])
+    }
 
     connect() {
-        this.element.classList.add(...this.inactiveClasses)
+        this.toggleState('hidden')
 
         if (this.showValue) {
             this.show()
@@ -71,7 +75,7 @@ export class Modal extends Controller {
     }
 
     show(): void {
-        if (this.isOpen || this.onShow().defaultPrevented) {
+        if (this.isOpen || !this.onShow()) {
             return
         }
 
@@ -79,7 +83,7 @@ export class Modal extends Controller {
         Modal.openModals.push(this)
         document.body.classList.add(...this.bodyClasses)
         this.showBackdrop()
-        toggleClassActiveState(this.element, true, this.activeClasses, this.inactiveClasses)
+        this.toggleState('visible')
         this.isOpen = true
         this.addOutsideHandler()
         this.addKeyboardHandler()
@@ -87,7 +91,7 @@ export class Modal extends Controller {
     }
 
     hide(): void {
-        if (!this.isOpen || this.onHide().defaultPrevented) {
+        if (!this.isOpen || !this.onHide()) {
             return
         }
 
@@ -95,23 +99,25 @@ export class Modal extends Controller {
         this.removeOutsideHandler()
         this.removeKeyboardHandler()
         this.removeBackdrop()
-        toggleClassActiveState(this.element, false, this.activeClasses, this.inactiveClasses)
+        this.toggleState('hidden')
         document.body.classList.remove(...this.bodyClasses)
         this.isOpen = false
         this.onHidden()
         Modal.openModals.peak() && Modal.openModals.peak().show()
     }
 
-    protected onShow(): Event {
-        return this.dispatch("show", { cancelable: true })
+    protected onShow(): boolean {
+        const event = this.dispatch("show", { cancelable: true })
+        return !event.defaultPrevented
     }
 
     protected onShown(): void {
         this.dispatch("shown")
     }
 
-    protected onHide(): Event {
-        return this.dispatch("hide", { cancelable: true })
+    protected onHide(): boolean {
+        const event = this.dispatch("hide", { cancelable: true })
+        return !event.defaultPrevented
     }
 
     protected onHidden(): void {
@@ -119,7 +125,7 @@ export class Modal extends Controller {
     }
 
     private showBackdrop() {
-        if (!this.backdropValue) {
+        if (!this.hasBackdropClass) {
             return
         }
 

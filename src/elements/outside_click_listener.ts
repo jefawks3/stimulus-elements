@@ -33,7 +33,7 @@ export class OutsideClickListener extends Controller {
     }
 
     listen() {
-        if (this.listening || this.onListen().defaultPrevented) {
+        if (this.listening || !this.onListen()) {
             return
         }
 
@@ -43,7 +43,7 @@ export class OutsideClickListener extends Controller {
     }
 
     remove() {
-        if (!this.listening || this.onRemove().defaultPrevented) {
+        if (!this.listening || !this.onRemove()) {
             return
         }
 
@@ -52,16 +52,18 @@ export class OutsideClickListener extends Controller {
         this.onRemoved()
     }
 
-    protected onListen(): Event {
-        return this.dispatch('listen', { cancelable: true })
+    protected onListen(): boolean {
+        const event = this.dispatch('listen', { cancelable: true })
+        return !event.defaultPrevented
     }
 
     protected onListening(): void {
         this.dispatch('listening')
     }
 
-    protected onRemove(): Event {
-        return this.dispatch('removing', { cancelable: true })
+    protected onRemove(): boolean {
+        const event = this.dispatch('removing', { cancelable: true })
+        return !event.defaultPrevented
     }
 
     protected onRemoved(): void {

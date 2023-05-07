@@ -38,7 +38,7 @@ export class Collapse extends Controller {
     }
 
     show() {
-        if (!this.collapsed || this.onShow().defaultPrevented) {
+        if (!this.collapsed || !this.onShow()) {
             return
         }
 
@@ -48,7 +48,7 @@ export class Collapse extends Controller {
     }
 
     hide() {
-        if (this.collapsed || this.onHide().defaultPrevented) {
+        if (this.collapsed || !this.onHide()) {
             return
         }
 
@@ -57,16 +57,18 @@ export class Collapse extends Controller {
         this.onHidden()
     }
 
-    protected onShow(): Event {
-        return this.dispatch('show', { cancelable: true })
+    protected onShow(): boolean {
+        const event = this.dispatch('show', { cancelable: true })
+        return !event.defaultPrevented
     }
 
     protected onShown() {
         this.dispatch('shown')
     }
 
-    protected onHide(): Event {
-        return this.dispatch('hide', {  })
+    protected onHide(): boolean {
+        const event = this.dispatch('hide', { cancelable: true })
+        return !event.defaultPrevented
     }
 
     protected onHidden() {

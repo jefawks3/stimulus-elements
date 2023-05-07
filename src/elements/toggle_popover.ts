@@ -7,12 +7,12 @@ export class TogglePopover extends Controller {
 
     declare readonly popoverOutlet: Popover
 
-    toggle() {
-        this.popoverOutlet.toggle()
+    toggle(e: Event) {
+        this.popoverOutlet.toggle(e)
     }
 
-    show() {
-        this.popoverOutlet.show()
+    show(e: Event) {
+        this.popoverOutlet.show(e)
     }
 
     hide() {

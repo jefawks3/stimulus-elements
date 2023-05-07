@@ -7,12 +7,12 @@ export class ToggleTooltip extends Controller {
 
     declare readonly tooltipOutlet: Tooltip
 
-    toggle() {
-        this.tooltipOutlet.toggle()
+    toggle(e: Event) {
+        this.tooltipOutlet.toggle(e)
     }
 
-    show() {
-        this.tooltipOutlet.show()
+    show(e: Event) {
+        this.tooltipOutlet.show(e)
     }
 
     hide() {

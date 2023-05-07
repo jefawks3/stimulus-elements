@@ -14,12 +14,12 @@ export class ToggleDropdown extends Controller {
         this.updateAriaExpanded = this.updateAriaExpanded.bind(this)
     }
 
-    toggle() {
-        this.dropdownOutlet.toggle()
+    toggle(e: Event) {
+        this.dropdownOutlet.toggle(e)
     }
 
-    show() {
-        this.dropdownOutlet.show()
+    show(e: Event) {
+        this.dropdownOutlet.show(e)
     }
 
     hide() {

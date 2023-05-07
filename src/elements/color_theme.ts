@@ -106,11 +106,9 @@ export class ColorTheme extends Controller {
         this.setColorTheme(this.systemThemeNameValue)
     }
 
-    protected onUpdateTheme(previous: string, next: string): Event {
-        return this.dispatch("update", {
-            detail: { previous, next },
-            cancelable: true
-        })
+    protected onUpdateTheme(previous: string, next: string): boolean {
+        const event = this.dispatch("update", { detail: { previous, next }, cancelable: true })
+        return !event.defaultPrevented
     }
 
     protected onUpdatedTheme(theme: string): void {
@@ -136,7 +134,7 @@ export class ColorTheme extends Controller {
         const previousTheme = this.currentThemeKey
         const value = theme === this.systemThemeNameValue ? this.systemTheme : theme
 
-        if (this.onUpdateTheme(previousTheme, theme).defaultPrevented) {
+        if (!this.onUpdateTheme(previousTheme, theme)) {
             return
         }
 

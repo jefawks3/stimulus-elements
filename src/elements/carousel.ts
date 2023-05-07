@@ -82,15 +82,9 @@ export class Carousel extends Controller {
         this.startCycle()
     }
 
-    protected onChange(nextPosition: number, currentPosition: number | undefined): Event {
-        return this.dispatch(
-            'change',
-            {
-                detail: {
-                    position: currentPosition,
-                    nextPosition,
-                }
-            })
+    protected onChange(nextPosition: number, currentPosition: number | undefined): boolean {
+        const event = this.dispatch('change', { detail: { position: currentPosition, nextPosition }})
+        return !event.defaultPrevented
     }
 
     protected onChanged(position: number, previousPosition: number | undefined) {
@@ -109,7 +103,7 @@ export class Carousel extends Controller {
     }
 
     private setActiveSlide(position: number) {
-        if (this.onChange(position, this.position).defaultPrevented) {
+        if (!this.onChange(position, this.position)) {
             return
         }
 
