@@ -27,7 +27,7 @@ export const useAriaParent = (controller: Controller, element: Element, type: Ar
                 if (element) {
                     return element
                 } else {
-                    throw `Could not find any elements that match "[aria-describedby~='${getId()}']" for "${controller.identifier}".`
+                    throw `Could not find any elements that match "[aria-'${type}'~='${getId()}']" for "${controller.identifier}".`
                 }
             }
         },

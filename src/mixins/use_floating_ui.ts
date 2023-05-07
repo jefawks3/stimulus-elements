@@ -81,10 +81,12 @@ export const useFloatingUI = (controller: Controller, options?: UseFloatingUIOpt
     }
 
     const onAttach = (position: ComputePositionReturn): void => {
+        controller.dispatch('attached', { target: reference })
         safeCallMethod(controller, 'onAttachFloating', { reference, floating, position })
     }
 
     const onDetach = (): void => {
+        controller.dispatch('detached', { target: reference })
         safeCallMethod(controller, 'onDetachFloating', { floating, reference })
     }
 
@@ -112,21 +114,16 @@ export const useFloatingUI = (controller: Controller, options?: UseFloatingUIOpt
             controller.application.logDebugActivity('use-floating-ui', 'detach', { floating })
             unsubscribe()
             unsubscribe = undefined
+            onDetach()
         }
     }
 
     const attach = (target: Target = undefined) => {
         detach()
-
         reference = (referenceElement || target) as Element
         controller.application.logDebugActivity('use-floating-ui', 'attach', { reference, floating })
         computeElementPosition(false)
-        const callback = autoUpdate(reference, floating, () => computeElementPosition(true))
-
-        unsubscribe = () => {
-            callback()
-            onDetach()
-        }
+        unsubscribe = autoUpdate(reference, floating, () => computeElementPosition(true))
 
         return () => unsubscribe && unsubscribe()
     }

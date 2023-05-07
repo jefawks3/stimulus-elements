@@ -26,10 +26,6 @@ export class PopoverBase extends Controller {
             default: {
                 mainAxis: 10,
             },
-        },
-        show: {
-            type: Boolean,
-            default: false
         }
     }
 
@@ -38,23 +34,19 @@ export class PopoverBase extends Controller {
     declare readonly flipValue: object
     declare readonly shiftValue: object
     declare readonly offsetValue: object
-    declare readonly showValue: boolean
 
-    declare private visible: boolean
+    declare private referenceElement: Element | null
     declare private attachElement: (target?: Element) => void
     declare private detachElement: () => void
     declare private observeClickOutside: () => void
     declare private unobserveClickOutside: () => void
     declare private toggleState: ToggleStateFunction
 
-
     get isVisible(): boolean {
-        return this.visible
+        return !!this.referenceElement
     }
 
     initialize(): void {
-        this.visible = false
-
         const options = {
             floatingElement: this.element,
             placement: this.placementValue,
@@ -80,51 +72,47 @@ export class PopoverBase extends Controller {
     connect() {
         super.connect()
         this.element.setAttribute('aria-hidden', 'true')
-
-        if (this.showValue) {
-            this.show()
-        }
     }
 
     disconnect(): void {
         this.hide()
     }
 
-    toggle(): void {
-        this.application.logDebugActivity(this.identifier, 'toggle', { visible: this.visible })
+    toggle(e: Event): void {
+        this.application.logDebugActivity(this.identifier, 'toggle', { visible: this.isVisible, reference: this.referenceElement, target: e.target })
 
-        if (this.visible) {
+        if (this.isVisible) {
             this.hide()
         } else {
-            this.show()
+            this.show(e)
         }
     }
 
-    show(): void {
-        this.application.logDebugActivity(this.identifier, 'show', { visible: this.visible })
+    show(e: Event): void {
+        this.application.logDebugActivity(this.identifier, 'show', { reference: this.referenceElement, target: e.target })
 
-        if (this.visible) {
+        if (e.currentTarget == this.referenceElement) {
             return
         }
 
+        this.referenceElement = e.currentTarget as Element
         this.dispatch('showing')
-        this.visible = true
-        this.attachElement(this.getReferenceElement())
+        this.attachElement(this.referenceElement)
     }
 
     hide(): void {
-        this.application.logDebugActivity(this.identifier, 'hide', { visible: this.visible })
+        this.application.logDebugActivity(this.identifier, 'hide', { reference: this.referenceElement })
 
-        if (!this.visible) {
+        if (!this.referenceElement) {
             return
         }
 
         this.dispatch('hiding')
-        this.visible = false
         this.toggleState('hidden')
         this.element.setAttribute('aria-hidden', 'true')
         this.unobserveClickOutside()
         this.detachElement()
+        this.referenceElement = null
     }
 
     onAttachFloating(e: EventWithPositionReturn) {
@@ -143,13 +131,9 @@ export class PopoverBase extends Controller {
     }
 
     onClickOutside({target}: Event) {
-        const reference = this.getReferenceElement()
-        if (!reference.contains(target as Node) && reference != target) {
+        if (!this.referenceElement ||
+            (!this.referenceElement.contains(target as Node) && this.referenceElement != target)) {
             this.hide()
         }
-    }
-
-    protected getReferenceElement(): Element {
-        throw new Error("Not implemented")
     }
 }
